@@ -1,0 +1,301 @@
+/* ============================================================================
+   SNAKE GAME - Main stylesheet
+   ============================================================================
+   Retro style inspired by the Nokia 3310 with monochromatic green palette.
+   The layout is responsive and adapts to the VS Code sidebar.
+   ============================================================================ */
+
+/* -- Global reset: removes margins, padding and uses border-box box-sizing -- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* -- Body: main container with Nokia light green background -- */
+body {
+    background-color: #9bbc0f;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 450px;
+}
+
+/* -- Game container: centered vertical layout -- */
+#game-container {
+    width: 100%;
+    max-height: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+
+/* -- Game canvas: green background, border, pixelated rendering for retro effect -- */
+#gameCanvas {
+    background-color: #8bac0f;
+    border: 2px solid #306230;
+    display: block;
+    image-rendering: pixelated;
+    max-height: 320px;
+}
+
+/* -- Score display: centered dark green text -- */
+#score-display {
+    color: #0f380f;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* -- Buttons container: horizontal layout with spacing -- */
+#buttons {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+/* -- Generic button style: retro look with Nokia colors -- */
+#buttons button,
+#backBtn {
+    flex: 1;
+    padding: 6px 4px;
+    background-color: #306230;
+    color: #9bbc0f;
+    border: 2px solid #0f380f;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+/* -- Button hover: darker background -- */
+#buttons button:hover,
+#backBtn:hover {
+    background-color: #0f380f;
+}
+
+/* -- Button click: dark background with slight scale reduction -- */
+#buttons button:active,
+#backBtn:active {
+    background-color: #0f380f;
+    transform: scale(0.97);
+}
+
+/* -- Leaderboard section: hidden by default, dark green text -- */
+#leaderboard {
+    width: 100%;
+    color: #0f380f;
+    display: none;
+}
+
+/* -- Leaderboard title -- */
+#leaderboard h3 {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+/* -- Leaderboard table: collapsed borders, small font -- */
+#leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+/* -- Table cells: minimal padding, centered text, bottom border -- */
+#leaderboard-table th,
+#leaderboard-table td {
+    padding: 3px 4px;
+    text-align: center;
+    border-bottom: 1px solid #306230;
+}
+
+/* -- Table header: medium green background, light green text -- */
+#leaderboard-table th {
+    background-color: #306230;
+    color: #9bbc0f;
+    font-weight: bold;
+}
+
+/* -- Odd table rows: slightly different background for readability -- */
+#leaderboard-table tbody tr:nth-child(odd) {
+    background-color: #8bac0f;
+}
+
+/* -- "Stop" button: dark red colors to distinguish it -- */
+#stopBtn {
+    background-color: #4a1a2e;
+    color: #e0a0b0;
+    border-color: #2a0a1a;
+}
+
+/* -- "Stop" button hover -- */
+#stopBtn:hover {
+    background-color: #2a0a1a;
+}
+
+/* -- "Back" button: full width below the table -- */
+#backBtn {
+    margin-top: 6px;
+    width: 100%;
+}
+
+/* -- Name input overlay: semi-transparent dark background -- */
+#name-overlay {
+    width: 100%;
+    background-color: rgba(15, 56, 15, 0.85);
+    padding: 12px 8px;
+    display: none;
+    justify-content: center;
+}
+
+/* -- Overlay inner box: centered vertical layout -- */
+#name-overlay-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+/* -- Overlay title (e.g. "GAME OVER") -- */
+#name-overlay-title {
+    color: #9bbc0f;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* -- Score displayed in the overlay -- */
+#name-overlay-score {
+    color: #8bac0f;
+    font-size: 12px;
+}
+
+/* -- Name input field: retro style, centered uppercase text -- */
+#nameInput {
+    width: 80%;
+    padding: 5px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    background-color: #9bbc0f;
+    color: #0f380f;
+    border: 2px solid #306230;
+    outline: none;
+}
+
+/* -- Name field placeholder: medium green color -- */
+#nameInput::placeholder {
+    color: #306230;
+}
+
+/* -- "Save" button: consistent style with other buttons -- */
+#nameSaveBtn {
+    padding: 5px 16px;
+    background-color: #306230;
+    color: #9bbc0f;
+    border: 2px solid #0f380f;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+/* -- "Save" button hover -- */
+#nameSaveBtn:hover {
+    background-color: #0f380f;
+}
+
+/* ============================================================================
+   SETTINGS PAGE
+   ============================================================================ */
+
+/* -- Settings container: consistent style with the leaderboard -- */
+#settings-page {
+    width: 100%;
+    color: #0f380f;
+    display: none;
+}
+
+/* -- Settings title -- */
+#settings-page h3 {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+/* -- Single setting row: label on the left, control on the right -- */
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 4px;
+    border-bottom: 1px solid #306230;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* -- Language select: retro Nokia style -- */
+#langSelect {
+    padding: 3px 6px;
+    background-color: #9bbc0f;
+    color: #0f380f;
+    border: 2px solid #306230;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    outline: none;
+}
+
+/* -- Grid toggle button: compact retro style -- */
+#gridToggleBtn {
+    padding: 3px 12px;
+    background-color: #306230;
+    color: #9bbc0f;
+    border: 2px solid #0f380f;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    min-width: 42px;
+}
+
+#gridToggleBtn:hover {
+    background-color: #0f380f;
+}
+
+/* -- Settings "Back" button: identical to the leaderboard one -- */
+#settingsBackBtn {
+    flex: 1;
+    margin-top: 6px;
+    width: 100%;
+    padding: 6px 4px;
+    background-color: #306230;
+    color: #9bbc0f;
+    border: 2px solid #0f380f;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+#settingsBackBtn:hover {
+    background-color: #0f380f;
+}
+
+#settingsBackBtn:active {
+    background-color: #0f380f;
+    transform: scale(0.97);
+}
