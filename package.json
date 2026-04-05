@@ -2,6 +2,8 @@
     "name": "snake",
     "displayName": "Snake",
     "description": "Nokia 3310 style Snake game for Visual Studio Code.",
+    "publisher": "Strifelab",
+    "author": "Strifelab",
     "repository": {
         "type": "git",
         "url": "https://github.com/AsoStrife/Vscode-Snake.git"
@@ -13,6 +15,7 @@
     "categories": [
         "Other"
     ],
+    "icon": "media/icon.png",
     "main": "./dist/extension.js",
     "activationEvents": [],
     "contributes": {

@@ -22,8 +22,8 @@
         maxCanvasHeight: 320,       // Maximum canvas height in pixels
 
         // -- Snake dimensions --
-        snakeHeadInset: 0.05,       // Cell inset for the head (0.10 = 10% per side)
-        snakeBodyInset: 0.06,       // Cell inset for the body (0.08 = 8% per side)
+        snakeHeadInset: 0.1,       // Cell inset for the head (0.10 = 10% per side)
+        snakeBodyInset: 0.12,       // Cell inset for the body (0.08 = 8% per side)
 
         // -- Element spacing --
         foodInset: 0.20,            // Cell inset for normal food (0.20 = 20% per side)
@@ -33,13 +33,13 @@
         specialScore: 5,            // Points earned by eating special food
 
         // -- Speed --
-        baseSpeed: 100,             // Initial game loop interval in milliseconds (higher = slower)
-        speedStep: 10,              // Interval reduction for each additional snake segment
-        minSpeed: 20,               // Minimum interval in ms (maximum reachable speed)
+        baseSpeed: 90,             // Initial game loop interval in milliseconds (higher = slower)
+        speedStep: 3,              // Interval reduction for each additional snake segment
+        minSpeed: 75,               // Minimum interval in ms (maximum reachable speed)
 
         // -- Special food --
         specialFoodChance: 0.15,    // Probability of special food spawning after eating (0.15 = 15%)
-        specialFoodDuration: 20,    // Special food duration in ticks before disappearing
+        specialFoodDuration: 35,    // Special food duration in ticks before disappearing
 
         // -- Grid borders --
         showGridBorders: true,      // If true, shows grid lines on the canvas

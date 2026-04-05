@@ -2,7 +2,19 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node -e \":*)",
+      "Bash(where sharp:*)",
+      "Bash(where magick:*)",
+      "Bash(where convert:*)",
+      "Bash(where inkscape:*)",
+      "Bash(where rsvg-convert:*)",
+      "Bash(npx --yes sharp-cli -i media/icon.svg -o media/icon.png --width 128 --height 128)",
+      "Bash(npx --yes @aspect-build/svgo-png media/icon.svg)",
+      "Bash(npx --yes svg2png-cli --help)",
+      "Bash(npx --yes sharp -i media/icon.svg -o media/icon.png --resize 128 128)",
+      "Bash(npx --yes sharp-cli -- -i media/icon.svg -o media/icon.png)",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const s=fs.statSync\\(''media/icon.png''\\); console.log\\(''Size:'', s.size, ''bytes''\\);\")"
     ]
   }
 }
