@@ -131,6 +131,11 @@
     const gridToggleBtn = document.getElementById('gridToggleBtn');
     const settingsBackBtn = document.getElementById('settingsBackBtn');
 
+    /** Pause overlay elements */
+    const pauseOverlay = document.getElementById('pause-overlay');
+    const pauseOverlayTitle = document.getElementById('pause-overlay-title');
+    const pauseOverlayMessage = document.getElementById('pause-overlay-message');
+
     // =========================================================================
     // GAME STATE VARIABLES
     // =========================================================================
@@ -176,6 +181,9 @@
 
     /** Flag indicating whether at least one game has been played (for button text) */
     let hasPlayed = false;
+
+    /** Flag indicating whether the game is currently paused */
+    let gamePaused = false;
 
     /** Score pending save (stored at game over) */
     let pendingScore = 0;
@@ -244,14 +252,10 @@
 
         // "SNAKE" title
         ctx.fillStyle = CONFIG.colors.text;
-        ctx.font = `bold ${Math.floor(CELL_SIZE * 0.9)}px "Courier New", monospace`;
+        ctx.font = `bold ${Math.floor(CELL_SIZE * 1.4)}px "Courier New", monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('SNAKE', canvas.width / 2, canvas.height / 2 - CELL_SIZE);
-
-        // Start message
-        ctx.font = `${Math.floor(CELL_SIZE * 0.55)}px "Courier New", monospace`;
-        ctx.fillText(t('pressStart'), canvas.width / 2, canvas.height / 2 + CELL_SIZE);
+        ctx.fillText('SNAKE', canvas.width / 2, canvas.height / 2);
     }
 
     // =========================================================================
@@ -546,8 +550,10 @@
      */
     function finishGame(title) {
         gameRunning = false;
+        gamePaused = false;
         clearInterval(gameInterval);
         gameInterval = null;
+        pauseOverlay.style.display = 'none';
         stopBtn.style.display = 'none';
 
         // Draw a semi-transparent overlay on the canvas
@@ -625,6 +631,32 @@
         finishGame(t('gameInterrupted'));
     }
 
+    /**
+     * Pauses the game: stops the game loop and shows the pause overlay.
+     * Only activates if the game is running and not already paused.
+     */
+    function pauseGame() {
+        if (!gameRunning || gamePaused) return;
+        if (showingLeaderboard || showingSettings) return;
+        gamePaused = true;
+        clearInterval(gameInterval);
+        gameInterval = null;
+        pauseOverlayTitle.textContent = t('paused');
+        pauseOverlayMessage.textContent = t('pausedMessage');
+        pauseOverlay.style.display = 'flex';
+    }
+
+    /**
+     * Resumes the game from pause: hides the overlay and restarts the game loop.
+     */
+    function resumeGame() {
+        if (!gamePaused) return;
+        gamePaused = false;
+        pauseOverlay.style.display = 'none';
+        restartInterval();
+        canvas.focus();
+    }
+
     // =========================================================================
     // LEADERBOARD
     // =========================================================================
@@ -643,12 +675,14 @@
             canvas.style.display = 'none';
             scoreDisplay.style.display = 'none';
             nameOverlay.style.display = 'none';
+            pauseOverlay.style.display = 'none';
             leaderboardDiv.style.display = 'block';
             stopBtn.style.display = 'none';
 
             // Stop the game if running
-            if (gameRunning) {
+            if (gameRunning || gamePaused) {
                 gameRunning = false;
+                gamePaused = false;
                 clearInterval(gameInterval);
                 gameInterval = null;
             }
@@ -678,11 +712,13 @@
             canvas.style.display = 'none';
             scoreDisplay.style.display = 'none';
             nameOverlay.style.display = 'none';
+            pauseOverlay.style.display = 'none';
             settingsPage.style.display = 'block';
             stopBtn.style.display = 'none';
 
-            if (gameRunning) {
+            if (gameRunning || gamePaused) {
                 gameRunning = false;
+                gamePaused = false;
                 clearInterval(gameInterval);
                 gameInterval = null;
             }
@@ -736,6 +772,10 @@
         if (settingsLangLabel) settingsLangLabel.textContent = t('language');
         if (settingsGridLabel) settingsGridLabel.textContent = t('showGrid');
         if (settingsBackBtn) settingsBackBtn.textContent = t('back');
+
+        // Pause overlay
+        if (pauseOverlayTitle) pauseOverlayTitle.textContent = t('paused');
+        if (pauseOverlayMessage) pauseOverlayMessage.textContent = t('pausedMessage');
 
         // Redraw idle screen if not in game and not on other pages
         if (!gameRunning && !showingLeaderboard && !showingSettings) {
@@ -818,7 +858,7 @@
      * (you can't go left if you're going right).
      */
     document.addEventListener('keydown', (e) => {
-        if (!gameRunning) return;
+        if (!gameRunning || gamePaused) return;
 
         let newDir = null;
         switch (e.key) {
@@ -837,6 +877,28 @@
             e.stopPropagation();
         }
     });
+
+    // =========================================================================
+    // PAUSE ON BLUR / RESUME ON FOCUS
+    // =========================================================================
+
+    /** Pause the game when the webview loses focus */
+    window.addEventListener('blur', () => pauseGame());
+
+    /** Resume the game when the webview regains focus */
+    window.addEventListener('focus', () => resumeGame());
+
+    /** Pause the game when the tab becomes hidden */
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            pauseGame();
+        } else {
+            resumeGame();
+        }
+    });
+
+    /** Click on the pause overlay to resume */
+    pauseOverlay.addEventListener('click', () => resumeGame());
 
     // =========================================================================
     // MESSAGES FROM THE HOST EXTENSION

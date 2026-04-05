@@ -178,6 +178,14 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
             </div>
         </div>
 
+        <!-- Pause overlay -->
+        <div id="pause-overlay" style="display:none">
+            <div id="pause-overlay-box">
+                <div id="pause-overlay-title">PAUSED</div>
+                <div id="pause-overlay-message">Click here to resume</div>
+            </div>
+        </div>
+
         <!-- Leaderboard section with top scores table -->
         <div id="leaderboard" style="display:none">
             <h3>Leaderboard</h3>

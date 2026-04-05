@@ -299,3 +299,50 @@ body {
     background-color: #0f380f;
     transform: scale(0.97);
 }
+
+/* ============================================================================
+   PAUSE OVERLAY
+   ============================================================================ */
+
+/* -- Pause overlay: covers the game-container area with semi-transparent bg -- */
+#pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(15, 56, 15, 0.6);
+    z-index: 10;
+    cursor: pointer;
+}
+
+/* -- Pause box: centered popup, does NOT take 100% width/height -- */
+#pause-overlay-box {
+    width: 75%;
+    max-width: 200px;
+    background-color: #306230;
+    border: 2px solid #0f380f;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* -- Pause title -- */
+#pause-overlay-title {
+    color: #9bbc0f;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* -- Pause message -- */
+#pause-overlay-message {
+    color: #8bac0f;
+    font-size: 11px;
+    text-align: center;
+}

@@ -32,4 +32,8 @@ I18N['en'] = {
     // Settings
     language: 'Language',
     showGrid: 'Show grid',
+
+    // Pause
+    paused: 'PAUSED',
+    pausedMessage: 'Click here to resume',
 };
