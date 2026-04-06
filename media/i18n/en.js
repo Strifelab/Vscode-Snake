@@ -32,6 +32,7 @@ I18N['en'] = {
     // Settings
     language: 'Language',
     showGrid: 'Show grid',
+    speed: 'Speed',
 
     // Pause
     paused: 'PAUSED',

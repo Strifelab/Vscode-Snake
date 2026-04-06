@@ -5,8 +5,10 @@
 
 // eslint-disable-next-line no-unused-vars
 var SUPPORTED_LANGUAGES = [
-    { code: 'it', label: 'Italiano' },
     { code: 'en', label: 'English' },
+    { code: 'fr', label: 'Français' },
+    { code: 'es', label: 'Español' },
+    { code: 'it', label: 'Italiano' },
 ];
 
 // eslint-disable-next-line no-unused-vars

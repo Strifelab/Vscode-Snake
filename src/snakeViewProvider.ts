@@ -14,12 +14,13 @@ import * as vscode from 'vscode';
 import { getLeaderboard, addScore } from './leaderboard';
 
 const SETTINGS_KEY = 'snakeGame.settings';
-const SUPPORTED_LANGUAGES = ['it', 'en'];
-const DEFAULT_LANGUAGE = 'it';
+const SUPPORTED_LANGUAGES = ['it', 'en', 'fr', 'es'];
+const DEFAULT_LANGUAGE = 'en';
 
 interface GameSettings {
     language: string;
     showGridBorders: boolean;
+    speed: number;
 }
 
 /**
@@ -52,6 +53,7 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
         return {
             language: saved?.language ?? this._getDefaultLanguage(),
             showGridBorders: saved?.showGridBorders ?? true,
+            speed: saved?.speed ?? 5,
         };
     }
 
@@ -139,6 +141,12 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
         const i18nEnUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'en.js')
         );
+        const i18nFrUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'fr.js')
+        );
+        const i18nEsUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'es.js')
+        );
 
         // Generate a random nonce for the CSP (prevents execution of unauthorized scripts)
         const nonce = getNonce();
@@ -206,6 +214,11 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
                 <select id="langSelect"></select>
             </div>
             <div class="setting-row">
+                <span id="settings-speed-label">Speed</span>
+                <input type="range" id="speedRange" min="1" max="10" value="5">
+                <span id="speedValue">5</span>
+            </div>
+            <div class="setting-row">
                 <span id="settings-grid-label">Show grid</span>
                 <button id="gridToggleBtn">ON</button>
             </div>
@@ -215,6 +228,8 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
     <script nonce="${nonce}" src="${i18nConfigUri}"></script>
     <script nonce="${nonce}" src="${i18nItUri}"></script>
     <script nonce="${nonce}" src="${i18nEnUri}"></script>
+    <script nonce="${nonce}" src="${i18nFrUri}"></script>
+    <script nonce="${nonce}" src="${i18nEsUri}"></script>
     <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
