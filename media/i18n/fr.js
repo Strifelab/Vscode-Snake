@@ -32,6 +32,7 @@ I18N['fr'] = {
     // Options
     language: 'Langue',
     showGrid: 'Afficher grille',
+    speed: 'Vitesse',
 
     // Pause
     paused: 'PAUSE',

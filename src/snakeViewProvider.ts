@@ -20,6 +20,7 @@ const DEFAULT_LANGUAGE = 'en';
 interface GameSettings {
     language: string;
     showGridBorders: boolean;
+    speed: number;
 }
 
 /**
@@ -52,6 +53,7 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
         return {
             language: saved?.language ?? this._getDefaultLanguage(),
             showGridBorders: saved?.showGridBorders ?? true,
+            speed: saved?.speed ?? 5,
         };
     }
 
@@ -210,6 +212,11 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
             <div class="setting-row">
                 <span id="settings-lang-label">Language</span>
                 <select id="langSelect"></select>
+            </div>
+            <div class="setting-row">
+                <span id="settings-speed-label">Speed</span>
+                <input type="range" id="speedRange" min="1" max="10" value="5">
+                <span id="speedValue">5</span>
             </div>
             <div class="setting-row">
                 <span id="settings-grid-label">Show grid</span>

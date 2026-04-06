@@ -32,6 +32,7 @@ I18N['es'] = {
     // Opciones
     language: 'Idioma',
     showGrid: 'Mostrar cuadrícula',
+    speed: 'Velocidad',
 
     // Pausa
     paused: 'PAUSA',

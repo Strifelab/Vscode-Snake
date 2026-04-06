@@ -33,9 +33,8 @@
         specialScore: 5,            // Points earned by eating special food
 
         // -- Speed --
-        baseSpeed: 90,             // Initial game loop interval in milliseconds (higher = slower)
+        gameSpeed: 5,              // Speed level 1-10 (default 5; level 2 ≈ original 90ms)
         speedStep: 3,              // Interval reduction for each additional snake segment
-        minSpeed: 75,               // Minimum interval in ms (maximum reachable speed)
 
         // -- Special food --
         specialFoodChance: 0.15,    // Probability of special food spawning after eating (0.15 = 15%)
@@ -58,6 +57,9 @@
             eyes: '#8bac0f',            // Snake eye color (light green, same as background)
         },
     };
+
+    // Speed level
+    const SPEED_INTERVALS = [500, 450, 400, 350, 300, 250, 200, 150, 100, 50];
 
     // =========================================================================
     // i18n - Internationalization
@@ -126,8 +128,11 @@
     const settingsPage = document.getElementById('settings-page');
     const settingsTitle = document.getElementById('settings-title');
     const settingsLangLabel = document.getElementById('settings-lang-label');
+    const settingsSpeedLabel = document.getElementById('settings-speed-label');
     const settingsGridLabel = document.getElementById('settings-grid-label');
     const langSelect = document.getElementById('langSelect');
+    const speedRange = document.getElementById('speedRange');
+    const speedValue = document.getElementById('speedValue');
     const gridToggleBtn = document.getElementById('gridToggleBtn');
     const settingsBackBtn = document.getElementById('settingsBackBtn');
 
@@ -199,8 +204,9 @@
      * @returns {number} Interval in milliseconds for the game loop
      */
     function getSpeed() {
+        const base = SPEED_INTERVALS[CONFIG.gameSpeed - 1];
         const extra = Math.max(0, snake.length - 3);
-        return Math.max(CONFIG.minSpeed, CONFIG.baseSpeed - extra * CONFIG.speedStep);
+        return Math.max(25, base - extra * CONFIG.speedStep);
     }
 
     /**
@@ -733,6 +739,8 @@
                 langSelect.appendChild(option);
             });
 
+            speedRange.value = CONFIG.gameSpeed;
+            speedValue.textContent = CONFIG.gameSpeed;
             gridToggleBtn.textContent = CONFIG.showGridBorders ? 'ON' : 'OFF';
         } else {
             canvas.style.display = 'block';
@@ -770,6 +778,7 @@
         // Settings title and labels
         if (settingsTitle) settingsTitle.textContent = t('settings');
         if (settingsLangLabel) settingsLangLabel.textContent = t('language');
+        if (settingsSpeedLabel) settingsSpeedLabel.textContent = t('speed');
         if (settingsGridLabel) settingsGridLabel.textContent = t('showGrid');
         if (settingsBackBtn) settingsBackBtn.textContent = t('back');
 
@@ -789,7 +798,7 @@
     function saveCurrentSettings() {
         vscode.postMessage({
             type: 'saveSettings',
-            settings: { language: currentLang, showGridBorders: CONFIG.showGridBorders },
+            settings: { language: currentLang, showGridBorders: CONFIG.showGridBorders, speed: CONFIG.gameSpeed },
         });
     }
 
@@ -829,6 +838,13 @@
     langSelect.addEventListener('change', () => {
         currentLang = langSelect.value;
         applyTranslations();
+        saveCurrentSettings();
+    });
+
+    /** Speed slider */
+    speedRange.addEventListener('input', () => {
+        CONFIG.gameSpeed = parseInt(speedRange.value, 10);
+        speedValue.textContent = CONFIG.gameSpeed;
         saveCurrentSettings();
     });
 
@@ -920,6 +936,7 @@
             case 'settingsData':
                 currentLang = message.settings.language;
                 CONFIG.showGridBorders = message.settings.showGridBorders;
+                if (message.settings.speed) CONFIG.gameSpeed = message.settings.speed;
                 applyTranslations();
                 break;
         }
