@@ -14,7 +14,8 @@
       "Bash(npx --yes svg2png-cli --help)",
       "Bash(npx --yes sharp -i media/icon.svg -o media/icon.png --resize 128 128)",
       "Bash(npx --yes sharp-cli -- -i media/icon.svg -o media/icon.png)",
-      "Bash(node -e \"const fs=require\\(''fs''\\); const s=fs.statSync\\(''media/icon.png''\\); console.log\\(''Size:'', s.size, ''bytes''\\);\")"
+      "Bash(node -e \"const fs=require\\(''fs''\\); const s=fs.statSync\\(''media/icon.png''\\); console.log\\(''Size:'', s.size, ''bytes''\\);\")",
+      "Bash(grep -l \"i18n\\\\|I18N\\\\|config.js\\\\|\\\\.js\" /c/Users/andre/Documents/Github/asostrife/Vscode-Snake/media/*.js)"
     ]
   }
 }

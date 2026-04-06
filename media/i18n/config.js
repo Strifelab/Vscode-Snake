@@ -9,6 +9,13 @@ var SUPPORTED_LANGUAGES = [
     { code: 'fr', label: 'Français' },
     { code: 'es', label: 'Español' },
     { code: 'it', label: 'Italiano' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'pt', label: 'Português' },
+    { code: 'zh', label: '中文' },
+    { code: 'ja', label: '日本語' },
+    { code: 'ko', label: '한국어' },
+    { code: 'ru', label: 'Русский' },
+    { code: 'hi', label: 'हिन्दी' },
 ];
 
 // eslint-disable-next-line no-unused-vars

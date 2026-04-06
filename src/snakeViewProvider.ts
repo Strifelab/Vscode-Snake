@@ -14,7 +14,7 @@ import * as vscode from 'vscode';
 import { getLeaderboard, addScore } from './leaderboard';
 
 const SETTINGS_KEY = 'snakeGame.settings';
-const SUPPORTED_LANGUAGES = ['it', 'en', 'fr', 'es'];
+const SUPPORTED_LANGUAGES = ['it', 'en', 'fr', 'es', 'de', 'pt', 'zh', 'ja', 'ko', 'ru', 'hi'];
 const DEFAULT_LANGUAGE = 'en';
 
 interface GameSettings {
@@ -147,6 +147,27 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
         const i18nEsUri = webview.asWebviewUri(
             vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'es.js')
         );
+        const i18nDeUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'de.js')
+        );
+        const i18nPtUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'pt.js')
+        );
+        const i18nZhUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'zh.js')
+        );
+        const i18nJaUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'ja.js')
+        );
+        const i18nKoUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'ko.js')
+        );
+        const i18nRuUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'ru.js')
+        );
+        const i18nHiUri = webview.asWebviewUri(
+            vscode.Uri.joinPath(this._context.extensionUri, 'media', 'i18n', 'hi.js')
+        );
 
         // Generate a random nonce for the CSP (prevents execution of unauthorized scripts)
         const nonce = getNonce();
@@ -230,6 +251,13 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
     <script nonce="${nonce}" src="${i18nEnUri}"></script>
     <script nonce="${nonce}" src="${i18nFrUri}"></script>
     <script nonce="${nonce}" src="${i18nEsUri}"></script>
+    <script nonce="${nonce}" src="${i18nDeUri}"></script>
+    <script nonce="${nonce}" src="${i18nPtUri}"></script>
+    <script nonce="${nonce}" src="${i18nZhUri}"></script>
+    <script nonce="${nonce}" src="${i18nJaUri}"></script>
+    <script nonce="${nonce}" src="${i18nKoUri}"></script>
+    <script nonce="${nonce}" src="${i18nRuUri}"></script>
+    <script nonce="${nonce}" src="${i18nHiUri}"></script>
     <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>
 </html>`;
