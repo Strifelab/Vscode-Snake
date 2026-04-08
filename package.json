@@ -1,50 +1,68 @@
 {
-    "name": "snake",
-    "displayName": "Snake",
-    "description": "Nokia 3310 style Snake game for Visual Studio Code.",
-    "publisher": "Strifelab",
-    "author": "Strifelab",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Strifelab/Vscode-Snake.git"
-    },
-    "version": "1.0.0",
-    "engines": {
-        "vscode": "^1.85.0"
-    },
-    "categories": [
-        "Other"
-    ],
-    "icon": "media/icon.png",
-    "main": "./dist/extension.js",
-    "activationEvents": [],
-    "contributes": {
-        "views": {
-            "explorer": [
-                {
-                    "type": "webview",
-                    "id": "snakeGame.gameView",
-                    "name": "Snake",
-                    "initialSize": 450
-                }
-            ]
+  "name": "snake",
+  "displayName": "Snake",
+  "description": "Nokia 3310 style Snake game for Visual Studio Code.",
+  "publisher": "Strifelab",
+  "author": "Strifelab",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Strifelab/Vscode-Snake.git"
+  },
+  "homepage": "https://github.com/Strifelab/Vscode-Snake",
+  "bugs": {
+    "url": "https://github.com/Strifelab/Vscode-Snake/issues"
+  },
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "snake",
+    "game",
+    "nokia",
+    "retro",
+    "arcade"
+  ],
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "markdown": "github",
+  "qna": "marketplace",
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "snakeGame.gameView",
+          "name": "Snake",
+          "initialSize": 450
         }
-    },
-    "scripts": {
-        "compile": "npm run check-types && node esbuild.js",
-        "watch": "npm-run-all -p watch:*",
-        "watch:esbuild": "node esbuild.js --watch",
-        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-        "package": "npm run check-types && node esbuild.js --production",
-        "build-vsix": "npm run package && vsce package",
-        "check-types": "tsc --noEmit",
-        "vscode:prepublish": "npm run package"
-    },
-    "devDependencies": {
-        "@types/vscode": "^1.85.0",
-        "@vscode/vsce": "^3.0.0",
-        "esbuild": "^0.25.0",
-        "npm-run-all": "^4.1.5",
-        "typescript": "^5.7.0"
+      ]
     }
+  },
+  "scripts": {
+    "compile": "npm run check-types && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && node esbuild.js --production",
+    "build-vsix": "npm run package && vsce package",
+    "check-types": "tsc --noEmit",
+    "vscode:prepublish": "npm run package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.25.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.7.0"
+  }
 }
