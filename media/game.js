@@ -81,11 +81,20 @@
     /** VS Code API for communicating with the host extension */
     const vscode = acquireVsCodeApi();
 
-    /** HTML canvas element where the game is drawn */
+    /** Wrapper div containing both canvas layers */
+    const canvasWrapper = document.getElementById('canvas-wrapper');
+
+    /** HTML canvas element where the game is drawn (foreground layer) */
     const canvas = document.getElementById('gameCanvas');
 
-    /** Canvas 2D rendering context */
-    const ctx = canvas.getContext('2d');
+    /** Canvas 2D rendering context (foreground) */
+    const ctx = canvas ? canvas.getContext('2d') : null;
+
+    /** Background canvas for static elements (grid) - performance optimization */
+    const backgroundCanvas = document.getElementById('backgroundCanvas');
+
+    /** Background canvas 2D rendering context */
+    const bgCtx = backgroundCanvas ? backgroundCanvas.getContext('2d') : null;
 
     /** Element displaying the current score */
     const scoreDisplay = document.getElementById('score-display');
@@ -157,6 +166,15 @@
     /** Buffered direction from the player (applied on next tick) */
     let nextDirection = { x: 1, y: 0 };
 
+    /** Input queue to buffer rapid keypresses (max 3 pending direction changes) */
+    let inputQueue = [];
+
+    /** Maximum size of the input queue */
+    const MAX_INPUT_QUEUE_SIZE = 3;
+
+    /** Track pressed keys to prevent key repeat (held keys) */
+    const pressedKeys = new Set();
+
     /** Normal food position {x, y} or null if not present */
     let food = null;
 
@@ -172,7 +190,7 @@
     /** Flag indicating whether the game is running */
     let gameRunning = false;
 
-    /** Reference to the game loop interval (for clearInterval) */
+    /** Reference to the game loop interval (deprecated - now using RAF) */
     let gameInterval = null;
 
     /** Total tick counter (used for animations) */
@@ -193,6 +211,15 @@
     /** Score pending save (stored at game over) */
     let pendingScore = 0;
 
+    /** Last frame timestamp for delta time calculation (RAF-based timing) */
+    let lastFrameTime = 0;
+
+    /** Time accumulator for fixed timestep updates */
+    let accumulator = 0;
+
+    /** Animation frame request ID for cancellation */
+    let animationFrameId = null;
+
     // =========================================================================
     // UTILITY FUNCTIONS
     // =========================================================================
@@ -200,7 +227,7 @@
     /**
      * Calculates the current game speed based on snake length.
      * The longer the snake, the faster the game (reduced interval).
-     * Speed never drops below CONFIG.minSpeed.
+     * Speed never drops below 25ms.
      * @returns {number} Interval in milliseconds for the game loop
      */
     function getSpeed() {
@@ -210,14 +237,63 @@
     }
 
     /**
-     * Restarts the game loop interval with the current speed.
-     * Called every time the snake eats to update the speed.
+     * Main game loop using requestAnimationFrame for smooth timing.
+     * Uses fixed timestep pattern: accumulates frame delta and processes
+     * game ticks at fixed intervals based on getSpeed().
+     * @param {number} currentTime - High-resolution timestamp from RAF
      */
-    function restartInterval() {
-        if (gameInterval) {
-            clearInterval(gameInterval);
+    function gameLoopRAF(currentTime) {
+        if (!gameRunning || gamePaused) {
+            animationFrameId = requestAnimationFrame(gameLoopRAF);
+            return;
         }
-        gameInterval = setInterval(gameLoop, getSpeed());
+
+        // Initialize on first frame
+        if (lastFrameTime === 0) {
+            lastFrameTime = currentTime;
+        }
+
+        // Calculate delta time since last frame
+        const deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
+
+        // Add delta to accumulator
+        accumulator += deltaTime;
+
+        // Get current tick interval based on snake length
+        const tickInterval = getSpeed();
+
+        // Process all accumulated ticks (usually 0 or 1, occasionally 2+ if lagging)
+        while (accumulator >= tickInterval) {
+            gameLogicTick();
+            accumulator -= tickInterval;
+        }
+
+        // Always redraw at display refresh rate for smooth visuals
+        draw();
+
+        // Request next frame
+        animationFrameId = requestAnimationFrame(gameLoopRAF);
+    }
+
+    /**
+     * Starts or resumes the RAF-based game loop.
+     */
+    function startGameLoop() {
+        lastFrameTime = 0;
+        accumulator = 0;
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(gameLoopRAF);
+    }
+
+    /**
+     * Stops the RAF-based game loop.
+     */
+    function stopGameLoop() {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+        lastFrameTime = 0;
+        accumulator = 0;
     }
 
     // =========================================================================
@@ -225,12 +301,15 @@
     // =========================================================================
 
     /**
-     * Resizes the canvas based on the container width.
+     * Resizes both canvases based on the container width.
      * Calculates optimal cell size while keeping the canvas
-     * within maximum height limits. Redraws the idle state if the
-     * game is not running.
+     * within maximum height limits. Redraws the background and idle state.
      */
     function resizeCanvas() {
+        if (!canvas || !backgroundCanvas) {
+            return;
+        }
+        
         const containerWidth = document.body.clientWidth - 8;
         CELL_SIZE = Math.max(12, Math.floor(containerWidth / CONFIG.gridWidth));
 
@@ -239,22 +318,67 @@
             CELL_SIZE = Math.floor(CONFIG.maxCanvasHeight / CONFIG.gridHeight);
         }
 
+        // Resize both canvases to match
         canvas.width = CELL_SIZE * CONFIG.gridWidth;
         canvas.height = CELL_SIZE * CONFIG.gridHeight;
+        backgroundCanvas.width = canvas.width;
+        backgroundCanvas.height = canvas.height;
+
+        // Redraw static background layer
+        drawBackground();
 
         if (!gameRunning) {
             drawIdle();
         }
     }
 
+    // =========================================================================
+    // RENDERING - Drawing the game on the canvas
+    // =========================================================================
+
+    /**
+     * Draws the static background layer (grid).
+     * This is called only once per resize or setting change, not every frame.
+     */
+    function drawBackground() {
+        if (!bgCtx || !backgroundCanvas) {
+            return;
+        }
+        
+        // Draw background color
+        bgCtx.fillStyle = CONFIG.colors.bg;
+        bgCtx.fillRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
+
+        // Draw grid borders if enabled in configuration
+        if (CONFIG.showGridBorders) {
+            bgCtx.strokeStyle = CONFIG.gridBorderColor;
+            bgCtx.lineWidth = 0.5;
+            // Vertical lines
+            for (let x = 0; x <= CONFIG.gridWidth; x++) {
+                bgCtx.beginPath();
+                bgCtx.moveTo(x * CELL_SIZE, 0);
+                bgCtx.lineTo(x * CELL_SIZE, backgroundCanvas.height);
+                bgCtx.stroke();
+            }
+            // Horizontal lines
+            for (let y = 0; y <= CONFIG.gridHeight; y++) {
+                bgCtx.beginPath();
+                bgCtx.moveTo(0, y * CELL_SIZE);
+                bgCtx.lineTo(backgroundCanvas.width, y * CELL_SIZE);
+                bgCtx.stroke();
+            }
+        }
+    }
+
     /**
      * Draws the initial screen (idle state) with the "SNAKE" title
-     * and the message to start the game.
+     * on the foreground canvas.
      */
     function drawIdle() {
-        // Background
-        ctx.fillStyle = CONFIG.colors.bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (!ctx || !canvas) return;
+        
+        // Clear foreground canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // "SNAKE" title
         ctx.fillStyle = CONFIG.colors.text;
@@ -286,6 +410,7 @@
 
         direction = { x: 1, y: 0 };       // Initial direction: right
         nextDirection = { x: 1, y: 0 };
+        inputQueue = [];                  // Clear input queue for fresh start
         score = 0;
         specialFood = null;
         specialFoodTimer = 0;
@@ -353,20 +478,20 @@
     // =========================================================================
 
     /**
-     * Main game loop function, executed at regular intervals.
-     * On each tick:
-     * 1. Applies the buffered direction from the player
-     * 2. Calculates the new head position (with border wrapping)
-     * 3. Checks for self-collision (game over)
-     * 4. Checks if the snake ate normal or special food
-     * 5. Manages snake growth and the special food timer
-     * 6. Updates speed if needed and redraws the canvas
+     * Core game logic tick - processes one step of game simulation.
+     * Handles direction changes, movement, collisions, food consumption,
+     * snake growth, and special food timer.
+     * Called by the RAF-based game loop at fixed intervals.
      */
-    function gameLoop() {
+    function gameLogicTick() {
         tickCount++;
 
-        // Apply the buffered direction from player input
-        direction = { ...nextDirection };
+        // Apply the next direction from input queue if available, otherwise keep current
+        if (inputQueue.length > 0) {
+            direction = inputQueue.shift();
+        }
+        // Update nextDirection for backwards compatibility with reversal checks
+        nextDirection = { ...direction };
 
         // Calculate the new head position with toroidal wrapping
         // (the snake reappears from the opposite side when exiting the grid)
@@ -410,10 +535,8 @@
         // If it ate, the tail stays (snake grows by one segment)
         if (!ate) {
             snake.pop();
-        } else {
-            // Update game speed after eating
-            restartInterval();
         }
+        // Note: Speed changes are automatically handled by getSpeed() in RAF loop
 
         // Handle special food countdown
         if (specialFood) {
@@ -424,7 +547,6 @@
         }
 
         updateScore();
-        draw();
     }
 
     // =========================================================================
@@ -432,36 +554,18 @@
     // =========================================================================
 
     /**
-     * Draws the entire game state on the canvas:
-     * - Background and optional grid
+     * Draws the dynamic game state on the foreground canvas.
+     * Background and grid are on the static background layer for performance.
+     * This function draws:
      * - Normal food (reduced square)
      * - Special food (blinking diamond)
      * - Snake (head with eyes + body)
      */
     function draw() {
-        // Draw the background
-        ctx.fillStyle = CONFIG.colors.bg;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Draw grid borders if enabled in configuration
-        if (CONFIG.showGridBorders) {
-            ctx.strokeStyle = CONFIG.gridBorderColor;
-            ctx.lineWidth = 0.5;
-            // Vertical lines
-            for (let x = 0; x <= CONFIG.gridWidth; x++) {
-                ctx.beginPath();
-                ctx.moveTo(x * CELL_SIZE, 0);
-                ctx.lineTo(x * CELL_SIZE, canvas.height);
-                ctx.stroke();
-            }
-            // Horizontal lines
-            for (let y = 0; y <= CONFIG.gridHeight; y++) {
-                ctx.beginPath();
-                ctx.moveTo(0, y * CELL_SIZE);
-                ctx.lineTo(canvas.width, y * CELL_SIZE);
-                ctx.stroke();
-            }
-        }
+        if (!ctx || !canvas) return;
+        
+        // Clear only the foreground canvas (background layer is static)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw normal food as a reduced square centered in the cell
         if (food) {
@@ -557,8 +661,8 @@
     function finishGame(title) {
         gameRunning = false;
         gamePaused = false;
-        clearInterval(gameInterval);
-        gameInterval = null;
+        stopGameLoop();
+        pressedKeys.clear(); // Clear key state
         pauseOverlay.style.display = 'none';
         stopBtn.style.display = 'none';
 
@@ -624,9 +728,9 @@
         hasPlayed = true;
         startBtn.textContent = t('replay');
         stopBtn.style.display = 'inline-block';
-        restartInterval();
+        startGameLoop();
         draw();
-        canvas.focus();
+        if (canvas) canvas.focus();
     }
 
     /**
@@ -645,8 +749,8 @@
         if (!gameRunning || gamePaused) return;
         if (showingLeaderboard || showingSettings) return;
         gamePaused = true;
-        clearInterval(gameInterval);
-        gameInterval = null;
+        stopGameLoop();
+        pressedKeys.clear(); // Clear key state
         pauseOverlayTitle.textContent = t('paused');
         pauseOverlayMessage.textContent = t('pausedMessage');
         pauseOverlay.style.display = 'flex';
@@ -659,8 +763,8 @@
         if (!gamePaused) return;
         gamePaused = false;
         pauseOverlay.style.display = 'none';
-        restartInterval();
-        canvas.focus();
+        startGameLoop();
+        if (canvas) canvas.focus();
     }
 
     // =========================================================================
@@ -678,7 +782,7 @@
         if (show) {
             if (showingSettings) toggleSettings(false);
             // Hide game elements and show the leaderboard
-            canvas.style.display = 'none';
+            canvasWrapper.style.display = 'none';
             scoreDisplay.style.display = 'none';
             nameOverlay.style.display = 'none';
             pauseOverlay.style.display = 'none';
@@ -689,15 +793,14 @@
             if (gameRunning || gamePaused) {
                 gameRunning = false;
                 gamePaused = false;
-                clearInterval(gameInterval);
-                gameInterval = null;
+                stopGameLoop();
             }
 
             // Request leaderboard data from the host extension
             vscode.postMessage({ type: 'getLeaderboard' });
         } else {
             // Restore the game view
-            canvas.style.display = 'block';
+            canvasWrapper.style.display = 'inline-block';
             scoreDisplay.style.display = 'block';
             leaderboardDiv.style.display = 'none';
         }
@@ -715,7 +818,7 @@
         showingSettings = show;
         if (show) {
             if (showingLeaderboard) toggleLeaderboard(false);
-            canvas.style.display = 'none';
+            canvasWrapper.style.display = 'none';
             scoreDisplay.style.display = 'none';
             nameOverlay.style.display = 'none';
             pauseOverlay.style.display = 'none';
@@ -725,8 +828,7 @@
             if (gameRunning || gamePaused) {
                 gameRunning = false;
                 gamePaused = false;
-                clearInterval(gameInterval);
-                gameInterval = null;
+                stopGameLoop();
             }
 
             // Populate the language select
@@ -743,7 +845,7 @@
             speedValue.textContent = CONFIG.gameSpeed;
             gridToggleBtn.textContent = CONFIG.showGridBorders ? 'ON' : 'OFF';
         } else {
-            canvas.style.display = 'block';
+            canvasWrapper.style.display = 'inline-block';
             scoreDisplay.style.display = 'block';
             settingsPage.style.display = 'none';
         }
@@ -852,6 +954,7 @@
     gridToggleBtn.addEventListener('click', () => {
         CONFIG.showGridBorders = !CONFIG.showGridBorders;
         gridToggleBtn.textContent = CONFIG.showGridBorders ? 'ON' : 'OFF';
+        drawBackground(); // Redraw background to show/hide grid
         saveCurrentSettings();
     });
 
@@ -870,11 +973,15 @@
     /**
      * Keyboard controls handling during the game.
      * Supports arrow keys and WASD keys.
-     * Direction is buffered to prevent 180-degree reversals
-     * (you can't go left if you're going right).
+     * Direction is buffered in a queue to prevent dropped inputs during rapid keypresses.
+     * Queue prevents 180-degree reversals by checking against the last queued direction.
+     * Key repeat prevention ensures only fresh keypresses are processed.
      */
     document.addEventListener('keydown', (e) => {
         if (!gameRunning || gamePaused) return;
+
+        // Ignore key repeat events (when key is held down)
+        if (pressedKeys.has(e.key)) return;
 
         let newDir = null;
         switch (e.key) {
@@ -885,13 +992,31 @@
         }
 
         if (newDir) {
+            // Mark key as pressed to prevent repeats
+            pressedKeys.add(e.key);
+            
+            // Determine the direction to check against: last in queue, or current direction if queue is empty
+            const lastDirection = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : direction;
+            
             // Prevent 180-degree reversal (e.g. from right to left)
-            if (newDir.x !== -direction.x || newDir.y !== -direction.y) {
+            if (newDir.x !== -lastDirection.x || newDir.y !== -lastDirection.y) {
+                // Only add to queue if not at max capacity
+                if (inputQueue.length < MAX_INPUT_QUEUE_SIZE) {
+                    inputQueue.push(newDir);
+                }
+                // Also update nextDirection for backwards compatibility
                 nextDirection = newDir;
             }
             e.preventDefault();
             e.stopPropagation();
         }
+    }, { passive: false });
+
+    /**
+     * Track key releases to enable key repeat prevention
+     */
+    document.addEventListener('keyup', (e) => {
+        pressedKeys.delete(e.key);
     });
 
     // =========================================================================
