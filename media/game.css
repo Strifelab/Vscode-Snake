@@ -35,13 +35,33 @@ body {
     position: relative;
 }
 
-/* -- Game canvas: green background, border, pixelated rendering for retro effect -- */
-#gameCanvas {
+/* -- Canvas wrapper: maintains layout space for absolutely positioned canvases -- */
+#canvas-wrapper {
+    position: relative;
+    display: inline-block;
+    width: auto;
+}
+
+/* -- Background canvas: static layer for grid (performance optimization) -- */
+#backgroundCanvas {
     background-color: #8bac0f;
     border: 2px solid #306230;
     display: block;
     image-rendering: pixelated;
-    max-height: 320px;
+    position: relative;
+}
+
+/* -- Game canvas: transparent foreground for dynamic elements (snake, food) -- */
+#gameCanvas {
+    background-color: transparent;
+    border: 2px solid #306230;
+    display: block;
+    image-rendering: pixelated;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    pointer-events: none;
 }
 
 /* -- Score display: centered dark green text -- */

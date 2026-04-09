@@ -183,8 +183,14 @@ export class SnakeViewProvider implements vscode.WebviewViewProvider {
 </head>
 <body>
     <div id="game-container">
-        <!-- Main canvas where the game is drawn -->
-        <canvas id="gameCanvas"></canvas>
+        <!-- Canvas wrapper to maintain layout space -->
+        <div id="canvas-wrapper">
+            <!-- Background canvas for static grid (performance optimization) -->
+            <canvas id="backgroundCanvas"></canvas>
+            
+            <!-- Main canvas where the game is drawn (layered on top) -->
+            <canvas id="gameCanvas"></canvas>
+        </div>
 
         <!-- Current score display -->
         <div id="score-display">Score: 0</div>
