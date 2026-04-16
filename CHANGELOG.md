@@ -5,6 +5,17 @@ All notable changes to the **Snake** extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-04-16
+
+### Changed
+
+- Replaced the interval-based game loop with a requestAnimationFrame fixed-timestep loop for smoother timing and adaptive tick intervals
+- Added a layered rendering setup with a static background canvas and canvas wrapper so the grid is redrawn only when needed while snake and food stay on the foreground canvas
+- Introduced an input queue and pressed-key tracking to buffer rapid direction changes and avoid key-repeat and 180° reversal issues
+- Updated resize handling to refresh both canvases and redraw the background, and made the grid toggle force a background refresh
+- Removed legacy setInterval usage, added RAF start/stop helpers, cleared key state on pause and finish, and improved focus handling
+- Updated CSS for the wrapper and layered canvases, and changed UI display toggles to hide the wrapper instead of the single canvas
+
 ## [1.0.0] - 2026-04-08
 
 ### Added
@@ -26,3 +37,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Secure webview with Content Security Policy (CSP) and nonce-based script loading
 
 [1.0.0]: https://github.com/Strifelab/Vscode-Snake/releases/tag/v1.0.0
+[1.1.0]: https://github.com/Strifelab/Vscode-Snake/releases/tag/v1.1.0
